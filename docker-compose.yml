@@ -1,0 +1,25 @@
+services:
+  platform:
+    build: ./mock_platform
+    environment:
+      MOCK_CLIENT_ID: sandbox_client_id
+      MOCK_SECRET: sandbox_secret
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:5000/health')"]
+      interval: 2s
+      retries: 15
+
+  client:
+    build: ./client
+    depends_on:
+      platform:
+        condition: service_healthy
+    environment:
+      PLATFORM_URL: http://platform:5000
+      MOCK_CLIENT_ID: sandbox_client_id
+      MOCK_SECRET: sandbox_secret
+      REPORT_DIR: /report
+    volumes:
+      - ./report:/report
